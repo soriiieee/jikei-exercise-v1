@@ -11,6 +11,9 @@
 * pip install numpy pandas matplotlib scipy
 * pip install jupyter 
 * pip install opencv-python
+* pip install seaborn
+* pip install scikit-learn
+* pip install prophet , plotly
 
 *git clone https://github.com/soriiieee/jikei-exercise-v1.git
 
