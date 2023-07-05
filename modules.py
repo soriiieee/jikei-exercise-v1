@@ -69,18 +69,31 @@ def calc():
     return None
 
 def plot_images(list_images):
+    
+    if not isinstance(list_images,list):
+        list_images = [list_images]
+    
     f,ax = plt.subplots(1,len(list_images) , figsize=(11*len(list_images) , 8))
 
-    for i,img in enumerate(list_images):
-
+    
+    def plot_ax(ax,img):
         if img.ndim==2:
-            ax[i].imshow(img,cmap="gray")
+            ax.imshow(img,cmap="gray")
         else:
-            ax[i].imshow(img)
-        if i==0:
-            ax[i].set_title("Original-Image")
+            ax.imshow(img)
+        
+    if len(list_images)==1:
+        img = list_images[0]
+        plot_ax(ax,img)
+    else:
+        for i,img in enumerate(list_images):
+            
+            plot_ax(ax,img)
+            if i==0:
+                ax[i].set_title("Original-Image")
     
     f.savefig("./output/img.png",bbox_inches="tight")
+    print("画像は、./output/img.png に保存されています！")
     plt.close()
     return None
 
@@ -88,8 +101,6 @@ def plot_images(list_images):
 def show():
     """ この部分にプログラムを記述します。 """
     ################
-    # ans = (4**3) / 2  + np.exp(2)
-
     input_jpg = "./input/26842196_s.jpg"
 
     """ 色の調整 """
