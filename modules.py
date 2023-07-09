@@ -21,61 +21,6 @@ from sklearn.preprocessing import PolynomialFeatures
 from prophet import Prophet
 
 
-# def cv2imshow(windowname,img):
-#     while(1):
-#         cv2.imshow(windowname, img)
-#         key = cv2.waitKey(100) & 0xff
-#         if key != 255 or cv2.getWindowProperty(windowname, cv2.WND_PROP_AUTOSIZE) == -1:
-#             cv2.destroyAllWindows()
-#             exit()
-
-BackendError = type('BackendError', (Exception,), {})
-def _is_visible(winname):
-    try:
-        ret = cv2.getWindowProperty(
-            winname, cv2.WND_PROP_VISIBLE
-        )
-
-        if ret == -1:
-            raise BackendError('Use Qt as backend to check whether window is visible or not.')
-
-        return bool(ret)
-
-    except cv2.error:
-        return False
-
-
-ORD_ESCAPE = 0x1b
-def closeable_imshow(winname, img, *, break_key=ORD_ESCAPE):
-    while True:
-        cv2.imshow(winname, img)
-        key = cv2.waitKey(10)
-
-        if key == break_key:
-            break
-        if not _is_visible(winname):
-            break
-    
-    cv2.destroyWindow(winname)
-
-
-def calc():
-    """ この部分にプログラムを記述します。 """
-    ################
-    # ans = (4**3) / 2  + np.exp(2)
-
-    sum=1
-    N = 10
-
-    for i in range(1,N+1):
-        sum = sum * i # sum +=1
-    
-
-    ans = sum
-    print("数字の合計 {}までの足し算= Answers".format(10), ans)
-    ################
-    return None
-
 def plot_images(list_images):
     
     if not isinstance(list_images,list):
@@ -135,7 +80,6 @@ def show():
                               cv2.THRESH_BINARY, 
                               31, 
                               10)
-    plot_images([img_rgb ,  img_gray, img_otsu,img_adaptative])
     ################
     return None
 
@@ -174,21 +118,18 @@ def plot_temps(df , title="sample"):
     return None
 
 
-def temp():
+def describe_temperature_file(point,year="all" ,month="all"):
+    """_summary_
+    Args:
+        point (str): _description_
+        year (str, optional): use Year. Defaults to "all".
+        month (str, optional): use Month . Defaults to "all".
+    
+    return: (None) 
+        Print max and minimum temperature day at Point site.
     """
-    気象庁のサイトからダウンロードしてみよう！
-    https://www.data.jma.go.jp/gmd/risk/obsdl/index.php
 
-    """
-    point = "funabashi"
-    # point = "nagano"
-    # point = "sapporo"
-
-
-    df = read_temperature_csv(point)
-    df = df[df["MM"] == 8]
-
-
+    df = read_temperature_csv(point,year="all" ,month="all")
 
     index_list = list(df.index)
     max_temp,max_idx = df["temp"].max() , np.argmax(df["temp"])
@@ -196,14 +137,14 @@ def temp():
     average_temp = round(df["temp"].mean(),2)
     print("-"*100)
     print(point , "の気温について")
+    print("使用年 = " , year , "使用月 = " , month)
     print(max_temp,"℃",index_list[max_idx])
     print(min_temp,"℃",index_list[min_idx])
-    print("Average-temperature(All-Term) = " , average_temp,"℃")
+    print("平均気温(All-Term) = " , average_temp,"℃")
+    return None
 
-    plot_temps(df, title="timeSeries {} temperature".format(point))
 
-
-def temp2(point):
+def plot_boxmap(point):
     """
     気象庁のサイトからダウンロードしてみよう！
     https://www.data.jma.go.jp/gmd/risk/obsdl/index.php
@@ -217,7 +158,6 @@ def temp2(point):
     df = read_temperature_csv(point)
 
     """ 8月だけを抜き取って、３０年間の玄関平均気温の推移を見てみる　"""
-    df = df[df["MM"] == 8]
 
     if 1:
         gr = df.groupby("YY").agg({"temp" : "mean"})
@@ -233,12 +173,13 @@ def temp2(point):
     sys.exit()
 
 
-def predict_AI_ProphetModel(point):
-    """
-    気温のモデル
-    1: 通常の線形モデル
-    2: Facebook開発のAIアルゴリズム(Prophet)
-    ＊この他にも、さまざまなモデルがありますが・・・・興味がある人がぜひ探してみて！
+def predict_prophetAIModel(point):
+    """_summary_
+
+    Args:
+        point (_type_): 分析する地点のポイント（finabashi .etc）
+    Returns:
+        _type_: None
     """
     df = read_temperature_csv(point)
     gr = df.groupby("YY").agg({"temp" : "mean"}).reset_index()
@@ -253,6 +194,7 @@ def predict_AI_ProphetModel(point):
     future = model.make_future_dataframe(periods=12*30, freq='MS')
     fcst = model.predict(future)
     fig = model.plot(fcst)
+    fig.suptitle("past30 and next30 years temperature Prediction!({})¥n Prophet(AI-timeSeries predict Model)".format(point))
     fig.savefig("./output/change_temperature_02_AI_Model.png",bbox_inches="tight")
     print("保存場所：", "./output/change_temperature_02_AI_Model.png")
     return None
@@ -320,5 +262,8 @@ if __name__ == "__main__":
 
     # temp()
     # predict_LinearModel("funabashi")
-    predict_LinearModel("nagano")
-    # temp3()
+    
+    
+    # predict_LinearModel("nagano")
+    predict_prophetAIModel("nagano")
+

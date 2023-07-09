@@ -6,7 +6,7 @@ import pandas as pd
 from datetime import datetime 
 
 
-from modules import plot_images,read_temperature_csv , 
+from modules import plot_images,describe_temperature_file,predict_prophetAIModel,predict_LinearModel 
 import cv2
 
 
@@ -16,10 +16,11 @@ def main():
     """ この部分にプログラムを記述します。 """
     ################
     
-
+    point = "funabashi"
+    describe_temperature_file(point)
+    
     ################
     return None
-
 
 def test():
     try:
