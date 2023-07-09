@@ -19,17 +19,12 @@
 
 
 ## Usage
-"""shell
-git pull origin main
-python test.py 
-"""
-
+    git pull origin main
+    python test.py 
+    
 ## Info
 * [https://www.photo-ac.com/](photoAC写真のフリーサイト) ライセンスフリーな画像について
 * [https://www.data.jma.go.jp/gmd/risk/obsdl/index.php](過去の気象庁のデータダウンロード) １３００地点のアメダスデータ
 * [http://labs.eecs.tottori-u.ac.jp/sd/Member/oyamada/OpenCV/html/py_tutorials/py_tutorials.html](OpenCV-python-Tutorial) 画像ライブラリ
 * [https://facebook.github.io/prophet/docs/quick_start.html](Prophet)　FaceBookが開発した、時系列AIモデル(統計＋トレンド分析)
-
-
-
 
