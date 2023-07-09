@@ -85,10 +85,11 @@ def plot_images(list_images):
     if len(list_images)==1:
         img = list_images[0]
         plot_ax(ax,img)
+        
     else:
         for i,img in enumerate(list_images):
             
-            plot_ax(ax,img)
+            plot_ax(ax[i],img)
             if i==0:
                 ax[i].set_title("Original-Image")
     
@@ -177,6 +178,9 @@ def temp():
 
 
     df = read_temperature_csv(point)
+    df = df[df["MM"] == 8]
+
+
 
     index_list = list(df.index)
     max_temp,max_idx = df["temp"].max() , np.argmax(df["temp"])
@@ -188,17 +192,16 @@ def temp():
     print(min_temp,"℃",index_list[min_idx])
     print("Average-temperature(All-Term) = " , average_temp,"℃")
 
-
     plot_temps(df, title="timeSeries {} temperature".format(point))
 
 
-def temp2():
+def temp2(point):
     """
     気象庁のサイトからダウンロードしてみよう！
     https://www.data.jma.go.jp/gmd/risk/obsdl/index.php
 
     """
-    point = "funabashi"
+    # point = "funabashi"
     # point = "nagano"
     # point = "sapporo"
 
@@ -208,7 +211,7 @@ def temp2():
     """ 8月だけを抜き取って、３０年間の玄関平均気温の推移を見てみる　"""
     df = df[df["MM"] == 8]
 
-    if 0:
+    if 1:
         gr = df.groupby("YY").agg({"temp" : "mean"})
         plot_temps(gr, title="timeSeries {} temperature".format(point))
 
@@ -296,5 +299,5 @@ if __name__ == "__main__":
     # show()
 
     # temp()
-    # temp2()
-    temp3()
+    temp2()
+    # temp3()
