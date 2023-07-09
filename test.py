@@ -6,7 +6,7 @@ import pandas as pd
 from datetime import datetime 
 
 
-from modules import plot_images
+from modules import plot_images,read_temperature_csv , 
 import cv2
 
 
@@ -16,19 +16,6 @@ def main():
     """ この部分にプログラムを記述します。 """
     ################
     
-    #input_jpg = "./input/26842196_s.jpg"
-    #input_jpg = "./input/gahag-0109509551.jpg"
-
-    """ 色の調整 """
-    #img_bgr = cv2.imread(input_jpg)
-    #img_rgb = cv2.cvtColor(img_bgr,cv2.COLOR_BGR2RGB)
-    #img_hsv = cv2.cvtColor(img_bgr,cv2.COLOR_BGR2HSV)
-    #img_gray = cv2.cvtColor(img_bgr,cv2.COLOR_BGR2GRAY)
-
-    #plot_images([img_rgb,img_bgr , img_hsv])
-    a = 100
-    b=1000
-    print(a+b)
 
     ################
     return None

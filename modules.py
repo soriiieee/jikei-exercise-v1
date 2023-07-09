@@ -4,12 +4,20 @@ import numpy as np
 
 import pandas as pd
 from datetime import datetime, date
-import cv2
+from dateutil.relativedelta import relativedelta
 
+import warnings
+warnings.simplefilter("ignore")
+
+import cv2
 import matplotlib.pyplot as plt
+plt.rcParams["font.size"] = 15
+
 import seaborn as sns
 
 from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import PolynomialFeatures
+
 from prophet import Prophet
 
 
@@ -128,15 +136,11 @@ def show():
                               31, 
                               10)
     plot_images([img_rgb ,  img_gray, img_otsu,img_adaptative])
-
-
-    # cv2.waitKey(0)
-    # cv2.destroyAllWindows()
     ################
     return None
 
 
-def read_temperature_csv(point):
+def read_temperature_csv(point,year="all" ,month="all"):
     def convert_date(x):
         yy ,mm,dd = list(map(int,x.split("/")))
         return date(yy,mm,dd)
@@ -148,8 +152,12 @@ def read_temperature_csv(point):
     df["YY"] = df["Date"].apply(lambda x: int(x.split("/")[0]))
     df["MM"] = df["Date"].apply(lambda x: int(x.split("/")[1]))
 
+    if year != "all":
+        df = df[df["YY"]==int(year)]
+    if month != "all":
+        df = df[df["MM"]==int(month)]
+         
     df["Date"] = df["Date"].apply(lambda x: convert_date(x))
-    
     df = df[df["quality"]>=5]
     df = df.set_index("Date")
     return df
@@ -225,36 +233,19 @@ def temp2(point):
     sys.exit()
 
 
-def temp3():
+def predict_AI_ProphetModel(point):
     """
     気温のモデル
     1: 通常の線形モデル
     2: Facebook開発のAIアルゴリズム(Prophet)
     ＊この他にも、さまざまなモデルがありますが・・・・興味がある人がぜひ探してみて！
     """
-    point = "funabashi"
-    # point = "nagano"
-    # point = "sapporo"
-
-
     df = read_temperature_csv(point)
-    # df = df[df["MM"] == 8]
     gr = df.groupby("YY").agg({"temp" : "mean"}).reset_index()
-
-    # X,y = gr["YY"].values.reshape(-1,1) , gr["temp"].values
-    # lr = LinearRegression()
-    # lr.fit(X,y)
-    # print(lr.coef_ , lr.intercept_)
-
     gr = df.groupby(["YY","MM"]).agg({"temp" : "mean"}).reset_index()
-    # print(gr.head())
-    # sys.exit()
-
-    # gr = gr.rename(columns = {"YY": "ds" , "temp" : "y"})
+    
     gr["ds"] = gr[["YY","MM"]].apply(lambda x: date(x[0],x[1],1),axis=1)
     gr = gr.rename(columns = {"temp" : "y"})
-    # print(gr.head())
-    # sys.exit()
     
     # model = Prophet().fit(gr)
     model = Prophet(seasonality_mode='multiplicative', mcmc_samples=300).fit(gr, show_progress=False)
@@ -262,35 +253,64 @@ def temp3():
     future = model.make_future_dataframe(periods=12*30, freq='MS')
     fcst = model.predict(future)
     fig = model.plot(fcst)
-    fig.savefig("./output/prophet.png",bbox_inches="tight")
-
-    # forecast = model.predict(future)
-
-    print(fcst)
+    fig.savefig("./output/change_temperature_02_AI_Model.png",bbox_inches="tight")
+    print("保存場所：", "./output/change_temperature_02_AI_Model.png")
+    return None
 
 
-
-
-
-
-    print(gr.head())
-
-
-
-
-
-
-
+def predict_LinearModel(point):
+    """
+    気温のモデル
+    1: 通常の線形モデル
+    2: Facebook開発のAIアルゴリズム(Prophet)
+    ＊この他にも、さまざまなモデルがありますが・・・・興味がある人がぜひ探してみて！
+    """
+    df = read_temperature_csv(point)
     
+    ave_temp = df["temp"].mean()
+    gr = df.groupby(["YY","MM"]).agg({"temp" : "mean"}).reset_index()
+    gr["YY2"] = gr["YY"].astype(float) + gr["MM"].astype(float)/12
+    X,y = gr["YY2"].values.reshape(-1,1) , gr["temp"].values
+    lr = LinearRegression().fit(X,y)
+    
+    X2 = PolynomialFeatures(2).fit_transform(gr["YY2"].values.reshape(-1,1))
+    lr2 = LinearRegression().fit(X2,y)
+    
+    print("傾き(1年あたりの気温の上昇率) = ",lr.coef_ ,"度")
 
-    ###本当に暑くなっているの？
-
-
-    # print(df.head())
+    dates = [ (datetime(2023, 8, 1) + relativedelta(months=i)).strftime("%Y-%m") for i in range(12*30)]
+    df_future = pd.DataFrame({"dates" : dates})
+    df_future["YY"] = df_future["dates"].apply(lambda x: int(x.split("-")[0]))
+    df_future["MM"] = df_future["dates"].apply(lambda x: int(x.split("-")[1]))
+    df_future["temp"] = np.nan
+    df_future["YY2"] = df_future["YY"].astype(float) + df_future["MM"].astype(float)/12 
+    
+    futures = pd.DataFrame({})
     
     
-    # print(df.dtypes)
-    # print(df.columns)
+    gr = pd.concat([gr,df_future],axis=0)
+    gr["predict"] = lr.predict(gr["YY2"].values.reshape(-1,1))
+    
+    X2_pred = PolynomialFeatures(2).fit_transform(gr["YY2"].values.reshape(-1,1))
+    gr["predict2"] = lr2.predict(X2_pred)
+    
+    # gr = gr.rename(columns = {"YY": "ds" , "temp" : "y"})
+    gr["ds"] = gr[["YY","MM"]].apply(lambda x: date(x[0],x[1],1),axis=1)
+    gr = gr.set_index("ds")
+    
+    fig,ax = plt.subplots(figsize=(16,8))
+    
+    ax.plot(gr["temp"],label="Observe" ,color = "k",marker="o" , markersize=3)
+    ax.axhline(y=ave_temp , label="Average-Temp({}) 1993-2023(30Years) = {}度".format(point,np.round(ave_temp,4)),color="gray")
+    ax.plot(gr["predict"],label="Predict(1) {}x+Const".format(np.round(lr.coef_,4)) ,color = "r")
+    ax.plot(gr["predict2"],label="Predict(2)",color = "b")
+    
+    ax.grid()
+    ax.legend(loc = "upper left")
+    ax.set_title("past30 and next30 years temperature Prediction!({})".format(point))
+    fig.savefig("./output/change_temperature_01_LinearModel.png",bbox_inches="tight")
+    print("保存場所：", "./output/change_temperature_01_LinearModel.png")
+    return None
 
 #以降この関数をmoduleで利用することがあるかもしれません。
 # そのときに、このように記述しておくと便利なので
@@ -299,5 +319,6 @@ if __name__ == "__main__":
     # show()
 
     # temp()
-    temp2()
+    # predict_LinearModel("funabashi")
+    predict_LinearModel("nagano")
     # temp3()
