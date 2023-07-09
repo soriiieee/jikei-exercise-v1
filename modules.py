@@ -91,7 +91,7 @@ def plot_images(list_images):
             
             plot_ax(ax[i],img)
             if i==0:
-                ax[i].set_title("Original-Image")
+                ax[i].set_title("Original-Image¥n Image-Size = {}".format(img.shape))
     
     f.savefig("./output/img.png",bbox_inches="tight")
     print("画像は、./output/img.png に保存されています！")
