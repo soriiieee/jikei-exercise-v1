@@ -1,3 +1,7 @@
 ref/
 env/
 .ipynb_checkpoints/
+.vs/
+__pycache__/
+utils/__pycache__/
+img/

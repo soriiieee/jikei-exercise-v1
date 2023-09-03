@@ -10,14 +10,14 @@ from modules import plot_images,describe_temperature_file,predict_prophetAIModel
 import cv2
 
 
-def main():
+def main(a,b):
     
     print("start main function!")
     """ この部分にプログラムを記述します。 """
     ################
     
-    point = "funabashi"
-    describe_temperature_file(point)
+    p = "funabashi"
+    describe_temperature_file(p)
     
     ################
     return None
@@ -33,6 +33,4 @@ def test():
 # img = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
 # そのときに、このように記述しておくと便利なので
 if __name__ == "__main__":
-    
-    test()
-    main()
+    main(222222,1000000)
