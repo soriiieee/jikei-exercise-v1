@@ -52,6 +52,8 @@ def plot_images(list_images):
     return None
 
 
+
+
 def show():
     """ この部分にプログラムを記述します。 """
     ################
@@ -73,7 +75,7 @@ def show():
 
     """ 色輪郭抽出 """
 
-    ret, img_otsu =cv2.threshold(img_gray,0,255,cv2.THRESH_OTSU)
+    ret, img_otsu = cv2.threshold(img_gray,0,255,cv2.THRESH_OTSU)
     img_adaptative = cv2.adaptiveThreshold(img_gray, 
                               255, 
                               cv2.ADAPTIVE_THRESH_MEAN_C, 

@@ -5,3 +5,6 @@ env/
 __pycache__/
 utils/__pycache__/
 img/
+input/
+othello/
+output/
